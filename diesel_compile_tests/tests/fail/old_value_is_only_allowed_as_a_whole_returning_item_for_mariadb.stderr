@@ -452,17 +452,7 @@ LL |         .returning(users::id.nullable().eq_any((old_value(users::id),).null
     |
     = help: the trait `Iterator` is not implemented for `NullableExpression<(OldValue<id>,)>`
 help: the following other types implement trait `AsInExpression<T>`
-   --> ROOT/diesel/src/expression/array_comparison.rs
-    |
-LL | / impl<ST, Combinator, Rule, Source, Rhs> AsInExpression<ST>
-LL | |     for CombinationClause<Combinator, Rule, Source, Rhs>
-LL | | where
-LL | |     ST: SqlType,
-LL | |     Self: SelectQuery<SqlType = ST>,
-LL | |     Subselect<Self, ST>: Expression<SqlType = ST>,
-    | |__________________________________________________^ `CombinationClause<Combinator, Rule, Source, Rhs>`
-    |
-   ::: ROOT/diesel/src/pg/expression/array.rs
+   --> ROOT/diesel/src/pg/expression/array.rs
     |
 LL | / impl<T, ST> AsInExpression<ST> for ArrayLiteral<T, ST>
 LL | | where
@@ -475,5 +465,15 @@ LL | | where
 LL | |     Self: Expression<SqlType = sql_types::Array<ST>>,
 LL | |     ST: SqlType,
     | |________________^ `diesel::pg::expression::array::ArraySubselect<T, ST>`
+    |
+   ::: ROOT/diesel/src/expression/array_comparison.rs
+    |
+LL | / impl<ST, Combinator, Rule, Source, Rhs> AsInExpression<ST>
+LL | |     for CombinationClause<Combinator, Rule, Source, Rhs>
+LL | | where
+LL | |     ST: SqlType,
+LL | |     Self: SelectQuery<SqlType = ST>,
+LL | |     Subselect<Self, ST>: Expression<SqlType = ST>,
+    | |__________________________________________________^ `CombinationClause<Combinator, Rule, Source, Rhs>`
     = note: required for `NullableExpression<(OldValue<id>,)>` to implement `IntoIterator`
     = note: required for `NullableExpression<(OldValue<id>,)>` to implement `AsInExpression<Nullable<Integer>>`

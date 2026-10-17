@@ -28,6 +28,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Pg>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Pg>`
    = note: this error originates in the derive macro `QueryableByName` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Pg>` is not satisfied
   --> tests/fail/broken_queryable_by_name.rs:16:9
@@ -50,6 +54,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `Queryable<diesel::sql_types::Integer, Pg>`
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Pg>`
    = note: this error originates in the derive macro `QueryableByName` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `i32: FromSqlRow<diesel::sql_types::Text, Pg>` is not satisfied
   --> tests/fail/broken_queryable_by_name.rs:29:11
@@ -81,6 +89,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Pg>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Pg>`
    = note: this error originates in the derive macro `QueryableByName` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Pg>` is not satisfied
   --> tests/fail/broken_queryable_by_name.rs:26:9
@@ -103,6 +115,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `Queryable<diesel::sql_types::Integer, Pg>`
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Pg>`
    = note: this error originates in the derive macro `QueryableByName` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `Untyped: CompatibleType<User, _>` is not satisfied
     --> tests/fail/broken_queryable_by_name.rs:36:49

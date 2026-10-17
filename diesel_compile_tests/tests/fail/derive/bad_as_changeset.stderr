@@ -19,6 +19,10 @@ LL |     #[derive(AsExpression, FromSqlRow)]
    |              `i32` implements `AsExpression<Nullable<Integer>>`
 
       = note: this error originates in the derive macro `AsChangeset` which comes from the expansion of the derive macro `AsExpression` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `i32: AppearsOnTable<users::table>` is not satisfied
   --> tests/fail/derive/bad_as_changeset.rs:11:10

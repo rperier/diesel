@@ -28,6 +28,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `diesel::Queryable<diesel::sql_types::Text, Pg>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Pg>`
    = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Pg>` is not satisfied
   --> tests/fail/selectable_with_typemisamatch.rs:16:9
@@ -50,6 +54,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `diesel::Queryable<diesel::sql_types::Integer, Pg>`
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Pg>`
    = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `(String, i32): FromStaticSqlRow<(_, Text), Pg>` is not satisfied
   --> tests/fail/selectable_with_typemisamatch.rs:34:17
@@ -84,6 +92,10 @@ LL | struct User {
    = note: required for `User` to implement `FromSqlRow<(Integer, Text), Pg>`
 
       = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `SelectBy<User, _>: CompatibleType<_, _>` is not satisfied
     --> tests/fail/selectable_with_typemisamatch.rs:43:15

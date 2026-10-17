@@ -96,6 +96,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Pg>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Pg>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Pg>` is not satisfied
   --> tests/fail/derive/has_query.rs:38:9
@@ -118,6 +122,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `Queryable<diesel::sql_types::Integer, Pg>`
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Pg>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `i32: FromSqlRow<diesel::sql_types::Text, Sqlite>` is not satisfied
   --> tests/fail/derive/has_query.rs:43:11
@@ -149,6 +157,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Sqlite>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Sqlite>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `String: FromSqlRow<Integer, Sqlite>` is not satisfied
   --> tests/fail/derive/has_query.rs:38:9
@@ -172,6 +184,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Sqlite>`
 
       = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `i32: FromSqlRow<diesel::sql_types::Text, Mysql>` is not satisfied
   --> tests/fail/derive/has_query.rs:43:11
@@ -203,6 +219,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Mysql>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Mysql>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Mysql>` is not satisfied
   --> tests/fail/derive/has_query.rs:38:9
@@ -225,6 +245,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `Queryable<diesel::sql_types::Integer, Mysql>`
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Mysql>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `i32: FromSqlRow<diesel::sql_types::Text, Mariadb>` is not satisfied
   --> tests/fail/derive/has_query.rs:43:11
@@ -256,6 +280,10 @@ LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
    = note: required for `i32` to implement `Queryable<diesel::sql_types::Text, Mariadb>`
    = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Mariadb>`
    = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `String: FromSqlRow<Integer, Mariadb>` is not satisfied
   --> tests/fail/derive/has_query.rs:38:9
@@ -280,6 +308,10 @@ LL |     id: String,
    = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Mariadb>`
 
       = note: this error originates in the derive macro `HasQuery` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
    --> tests/fail/derive/has_query.rs:50:10
