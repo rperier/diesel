@@ -1,26 +1,42 @@
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:101:10
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:101:17
     |
-LL |         .select((
-    |          ^^^^^^ unsatisfied trait bound
+LL |           .select((
+    |  __________------_^
+    | |          |
+    | |          required by a bound introduced by this call
+LL | |             count_star(),
+LL | |             children::table
+LL | |                 .filter(children::parent_id.eq(parents::id))
+LL | |                 .select(sum(children::amount))
+LL | |                 .single_value(),
+LL | |         ))
+    | |_________^ the trait `Table` is not implemented for `SelectStatement<FromClause<table>>`
     |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-   --> ROOT/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<Yes> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
-...
-LL |     impl MixedAggregates<Never> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-    = note: required for `(CountStar, Grouped<Subselect<_, _>>)` to implement `ValidGrouping<()>`
+    = help: the following other types implement trait `Table`:
+              Only<S>
+              Tablesample<S, TSM>
+              children::table
+              diesel::pg::metadata_lookup::pg_namespace::table
+              diesel::pg::metadata_lookup::pg_type::table
+              parents::table
+              toys::table
+    = note: required for `SelectStatement<FromClause<table>>` to implement `QueryRelation`
     = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(CountStar, Grouped<Subselect<_, _>>)>`
+    = note: 1 redundant requirement hidden
+    = note: required for `parents::table` to implement `SelectDsl<(CountStar, Grouped<Subselect<_, _>>)>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:109:37
      |
  LL |         .load::<(i64, Option<i64>)>(&mut conn);
@@ -28,108 +44,302 @@ error[E0277]: mixing aggregate and not aggregate expressions is not allowed in S
      |          |
      |          required by a bound introduced by this call
      |
-     = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-     = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-     = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-     = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-    --> ROOT/diesel/src/expression/mod.rs
+     = help: the trait `LoadQuery<'_, _, (i64, Option<i64>)>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> ROOT/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL |     impl MixedAggregates<Yes> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
 ...
- LL |     impl MixedAggregates<Never> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-     = note: required for `(CountStar, Grouped<Subselect<_, _>>)` to implement `ValidGrouping<()>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, (i64, Option<i64>)>`
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> ROOT/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
      
-error[E0277]: the trait bound `id: ValidGrouping<SubselectGroupBy<name, _>>` is not satisfied
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:114:10
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:114:17
     |
-LL |         .select((
-    |          ^^^^^^ unsatisfied trait bound
+LL |   ...   .select((
+    |  ________------_^
+    | |        |
+    | |        required by a bound introduced by this call
+LL | | ...
+LL | | ...       parents::name,
+LL | | ...       children::table
+...   |
+LL | | ...           .single_value(),
+LL | | ...   ))
+    | |_______^ unsatisfied trait bound
     |
-help: the trait `ValidGrouping<diesel::internal::table_macro::SubselectGroupBy<parents::columns::name, diesel::internal::table_macro::FromClause<children::table>>>` is not implemented for `parents::columns::id`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
+    = help: the trait `SelectDsl<(parents::columns::name, diesel::expression::grouped::Grouped<diesel::expression::subselect::Subselect<diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<children::table>, diesel::query_builder::select_clause::SelectClause<diesel::expression::functions::aggregate_folding::sum_utils::sum<diesel::sql_types::Integer, children::columns::amount>>, diesel::query_builder::distinct_clause::NoDistinctClause, diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<children::columns::parent_id, parents::columns::id>>>, diesel::query_builder::order_clause::NoOrderClause, diesel::internal::derives::multiconnection::LimitOffsetClause<diesel::internal::derives::multiconnection::LimitClause<diesel::internal::derives::as_expression::Bound<BigInt, i64>>, diesel::internal::derives::multiconnection::NoOffsetClause>>, Nullable<BigInt>>>)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> ROOT/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
-  LL |         id -> Integer,
-    |         ^^
-help: `parents::columns::id` implements trait `ValidGrouping<GroupByClause>`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
-    |
-  LL |         id -> Integer,
-    |         ^^
-    |         |
-    |         `ValidGrouping<()>`
-    |         `ValidGrouping<__GB>`
-    |         `ValidGrouping<SubselectGroupBy<__GB, __F>>`
-    = note: required for `Eq<parent_id, id>` to implement `ValidGrouping<SubselectGroupBy<name, _>>`
-    = note: 1 redundant requirement hidden
-    = note: required for `(name, Grouped<Subselect<_, _>>)` to implement `ValidGrouping<parents::columns::name>`
-    = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<(name, Grouped<Subselect<_, _>>)>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `id: ValidGrouping<SubselectGroupBy<_, _>>` is not satisfied
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:126:10
-    |
-LL |         .select((
-    |          ^^^^^^ unsatisfied trait bound
-    |
-help: the trait `ValidGrouping<diesel::internal::table_macro::SubselectGroupBy<diesel::internal::table_macro::SubselectGroupBy<parents::columns::name, diesel::internal::table_macro::FromClause<children::table>>, diesel::internal::table_macro::FromClause<toys::table>>>` is not implemented for `parents::columns::id`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
-    |
-  LL |         id -> Integer,
-    |         ^^
-help: `parents::columns::id` implements trait `ValidGrouping<GroupByClause>`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
-    |
-  LL |         id -> Integer,
-    |         ^^
-    |         |
-    |         `ValidGrouping<()>`
-    |         `ValidGrouping<__GB>`
-    |         `ValidGrouping<SubselectGroupBy<__GB, __F>>`
-    = note: required for `Eq<child_id, id>` to implement `ValidGrouping<SubselectGroupBy<_, _>>`
-    = note: 2 redundant requirements hidden
-    = note: required for `(name, Exists<SelectStatement<_, _, _, _>>)` to implement `ValidGrouping<parents::columns::name>`
-    = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<(name, Exists<_>)>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:138:10
-    |
-LL |         .select((
-    |          ^^^^^^ unsatisfied trait bound
-    |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-   --> ROOT/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<Yes> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
 ...
-LL |     impl MixedAggregates<Never> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-    = note: required for `(CountStar, Exists<SelectStatement<_, _, _, _>>)` to implement `ValidGrouping<()>`
-    = note: required for `SelectStatement<FromClause<Alias<p>>>` to implement `SelectDsl<(CountStar, Exists<_>)>`
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:122:40
+     |
+ LL |         .load::<(String, Option<i64>)>(&mut conn);
+     |          ----                          ^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = help: the trait `LoadQuery<'_, _, (std::string::String, Option<i64>)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> ROOT/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+note: required by a bound in `load`
+    --> ROOT/diesel/src/query_dsl/mod.rs
+     |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
+LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+LL |     where
+LL |         Self: LoadQuery<'query, Conn, U>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
+  
+     
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:126:17
+    |
+LL |   ...   .select((
+    |  ________------_^
+    | |        |
+    | |        required by a bound introduced by this call
+LL | | ...
+LL | | ...       parents::name,
+LL | | ...       exists(
+...   |
+LL | | ...       ),
+LL | | ...   ))
+    | |_______^ unsatisfied trait bound
+    |
+    = help: the trait `SelectDsl<(parents::columns::name, diesel::internal::derives::multiconnection::Exists<diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<children::table>, diesel::query_builder::select_clause::DefaultSelectClause<diesel::internal::table_macro::FromClause<children::table>>, diesel::query_builder::distinct_clause::NoDistinctClause, diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::And<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<children::columns::parent_id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>, diesel::internal::derives::multiconnection::Exists<diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<toys::table>, diesel::query_builder::select_clause::DefaultSelectClause<diesel::internal::table_macro::FromClause<toys::table>>, diesel::query_builder::distinct_clause::NoDistinctClause, diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<toys::columns::child_id, parents::columns::id>>>>>>>>>>)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> ROOT/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:135:33
+     |
+ LL |         .load::<(String, bool)>(&mut conn);
+     |          ----                   ^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = help: the trait `LoadQuery<'_, _, (std::string::String, bool)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> ROOT/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+note: required by a bound in `load`
+    --> ROOT/diesel/src/query_dsl/mod.rs
+     |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
+LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+LL |     where
+LL |         Self: LoadQuery<'query, Conn, U>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
+  
+     
+error[E0277]: the trait bound `Alias<p>: SelectDsl<(CountStar, Exists<_>)>` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:138:17
+    |
+LL |           .select((
+    |  __________------_^
+    | |          |
+    | |          required by a bound introduced by this call
+LL | |             count_star(),
+LL | |             exists(children::table.filter(children::parent_id.eq(p.field(parents::id)))),
+LL | |         ))
+    | |_________^ unsatisfied trait bound
+    |
+    = help: the trait `SelectDsl<(diesel::dsl::CountStar, diesel::internal::derives::multiconnection::Exists<diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<children::table>, diesel::query_builder::select_clause::DefaultSelectClause<diesel::internal::table_macro::FromClause<children::table>>, diesel::query_builder::distinct_clause::NoDistinctClause, diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<children::columns::parent_id, AliasedField<p, parents::columns::id>>>>>>)>` is not implemented for `Alias<p>`
+help: the trait `SelectDsl<Selection>` is conditionally implemented for `Alias<S>`
+   --> ROOT/diesel/src/query_source/aliasing/dsl_impls.rs
+    |
+ LL | / impl<S, Selection> SelectDsl<Selection> for Alias<S>
+ LL | | where
+ LL | |     Selection: Expression,
+ LL | |     Self: AsQuery,
+ LL | |     <Self as AsQuery>::Query: SelectDsl<Selection>,
+    | |_______________________________--------------------^
+    |                                 |
+    |                                 unsatisfied requirement introduced here: `<Alias<_> as AsQuery>::Query: SelectDsl<_>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:143:30
      |
  LL |         .load::<(i64, bool)>(&mut conn);
@@ -137,133 +347,187 @@ error[E0277]: mixing aggregate and not aggregate expressions is not allowed in S
      |          |
      |          required by a bound introduced by this call
      |
-     = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-     = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-     = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-     = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-    --> ROOT/diesel/src/expression/mod.rs
+     = help: the trait `LoadQuery<'_, _, (i64, bool)>` is not implemented for `SelectStatement<FromClause<Alias<p>>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> ROOT/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL |     impl MixedAggregates<Yes> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
 ...
- LL |     impl MixedAggregates<Never> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-     = note: required for `(CountStar, Exists<SelectStatement<_, _, _, _>>)` to implement `ValidGrouping<()>`
-     = note: required for `SelectStatement<FromClause<Alias<p>>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<Alias<p>>, _>` to implement `LoadQuery<'_, _, (i64, bool)>`
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> ROOT/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
      
-error[E0277]: cannot box `SelectStatement<FromClause<table>, _, _, _>` for backend `Pg`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:154:18
-    |
-LL |                 .into_boxed::<pg::Pg>()
-    |                  ^^^^^^^^^^ the trait `BoxedDsl<'_, Pg>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
-    |
-    = note: this either means `SelectStatement<FromClause<table>, _, _, _>` is no valid SQL for `Pg`
-    = note: or this means `SelectStatement<FromClause<table>, _, _, _>` uses clauses not supporting boxing like the `LOCKING` or `GROUP BY` clause
-help: the following other types implement trait `BoxedDsl<'a, DB>`
-   --> ROOT/diesel/src/query_builder/select_statement/dsl_impls.rs
-    |
-LL | / impl<'a, F, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H>
-LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
+error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:154:18
+     |
+ LL |                 .into_boxed::<pg::Pg>()
+     |                  ^^^^^^^^^^ expected `Once`, found `Never`
+     |
+note: required for `parents::columns::id` to implement `AppearsOnTable<children::table>`
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
+     |
+   LL |         id -> Integer,
+     |         ^^
+     = note: associated types for the current `impl` cannot be restricted in `where` clauses
+     = note: 2 redundant requirements hidden
+     = note: required for `Grouped<Eq<parent_id, id>>` to implement `AppearsOnTable<children::table>`
+     = note: required for `WhereClause<Grouped<Eq<parent_id, id>>>` to implement `ValidWhereClause<FromClause<table>>`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `Query`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `AsQuery`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `BoxedDsl<'_, Pg>`
+note: required by a bound in `diesel::QueryDsl::into_boxed`
+    --> ROOT/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
 ...
-LL | / impl<'a, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H>
+LL |     fn into_boxed<'a, DB>(self) -> IntoBoxed<'a, Self, DB>
+...
+LL |         Self: methods::BoxedDsl<'a, DB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::into_boxed`
+  
+          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: FilterDsl<_>` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:166:25
+    |
+LL |                 .filter(children::parent_id.eq(parents::id))
+    |                  ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<children::columns::parent_id, parents::columns::id>>>` is not implemented for `BoxedSelectStatement<'_, Nullable<BigInt>, _, Pg>`
+help: the following other types implement trait `FilterDsl<Predicate>`
+   --> ROOT/diesel/src/query_builder/select_statement/boxed.rs
+    |
+LL | / impl<'a, ST, QS, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, FromClause<QS>, DB, GB>
 LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
+LL | |     QS: QuerySource,
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<QS> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, _, DB, GB>`
+...
+LL | / impl<'a, ST, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, NoFromClause, DB, GB>
+LL | | where
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<NoFromClause> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, NoFromClause, DB, GB>`
+note: required by a bound in `diesel::QueryDsl::filter`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: methods::FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::filter`
  
     
 error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:166:18
-    |
-LL |                 .filter(children::parent_id.eq(parents::id))
-    |                  ^^^^^^ expected `Once`, found `Never`
-    |
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:178:18
+     |
+ LL |                 .into_boxed_clone::<pg::Pg>()
+     |                  ^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+     |
 note: required for `parents::columns::id` to implement `AppearsOnTable<children::table>`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
-    |
-  LL |         id -> Integer,
-    |         ^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 2 redundant requirements hidden
-    = note: required for `Grouped<Eq<parent_id, id>>` to implement `AppearsOnTable<children::table>`
-    = note: required for `BoxedSelectStatement<'_, Nullable<BigInt>, _, Pg>` to implement `FilterDsl<Grouped<Eq<parent_id, id>>>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot box `SelectStatement<FromClause<table>, _, _, _>` for backend `Pg`
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:178:18
-    |
-LL |                 .into_boxed_clone::<pg::Pg>()
-    |                  ^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-    = help: the trait `BoxedCloneDsl<'_, Pg>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
-    = note: this either means `SelectStatement<FromClause<table>, _, _, _>` is no valid SQL for `Pg`
-    = note: or this means `SelectStatement<FromClause<table>, _, _, _>` uses clauses not supporting boxing like the `LOCKING` or `GROUP BY` clause
-help: the following other types implement trait `BoxedCloneDsl<'a, DB>`
-   --> ROOT/diesel/src/query_builder/select_statement/dsl_impls.rs
-    |
-LL | / impl<'a, F, S, D, W, O, LOf, G, H, DB> BoxedCloneDsl<'a, DB>
-LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H>
-LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + Sync + 'a,
-LL | |     H: QueryFragment<DB> + Send + Sync + 'a,
-    | |____________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
+    --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:8:9
+     |
+   LL |         id -> Integer,
+     |         ^^
+     = note: associated types for the current `impl` cannot be restricted in `where` clauses
+     = note: 2 redundant requirements hidden
+     = note: required for `Grouped<Eq<parent_id, id>>` to implement `AppearsOnTable<children::table>`
+     = note: required for `WhereClause<Grouped<Eq<parent_id, id>>>` to implement `ValidWhereClause<FromClause<table>>`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `Query`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `AsQuery`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `BoxedCloneDsl<'_, Pg>`
+note: required by a bound in `diesel::QueryDsl::into_boxed_clone`
+    --> ROOT/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
 ...
-LL | / impl<'a, S, D, W, O, LOf, G, H, DB> BoxedCloneDsl<'a, DB>
-LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H>
-LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + Sync + 'a,
-LL | |     H: QueryFragment<DB> + Send + Sync + 'a,
-    | |____________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
- 
-    
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:196:10
+LL |     fn into_boxed_clone<'a, DB>(self) -> IntoBoxedClone<'a, Self, DB>
+...
+LL |         Self: methods::BoxedCloneDsl<'a, DB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::into_boxed_clone`
+  
+          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
+   --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:196:17
     |
 LL |         .select((count_star(), exists(children::table.filter(correlated))))
-    |          ^^^^^^ unsatisfied trait bound
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Table` is not implemented for `SelectStatement<FromClause<table>>`
+    |          |
+    |          required by a bound introduced by this call
     |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-   --> ROOT/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<Yes> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
-...
-LL |     impl MixedAggregates<Never> for Yes {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-    = note: required for `(CountStar, Exists<SelectStatement<_, _, _, _>>)` to implement `ValidGrouping<()>`
+    = help: the following other types implement trait `Table`:
+              Only<S>
+              Tablesample<S, TSM>
+              children::table
+              diesel::pg::metadata_lookup::pg_namespace::table
+              diesel::pg::metadata_lookup::pg_type::table
+              parents::table
+              toys::table
+    = note: required for `SelectStatement<FromClause<table>>` to implement `QueryRelation`
     = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(CountStar, Exists<_>)>`
+    = note: 1 redundant requirement hidden
+    = note: required for `parents::table` to implement `SelectDsl<(CountStar, Exists<_>)>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> ROOT/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/subselect_cannot_reference_ungrouped_outer_columns.rs:198:30
      |
  LL |         .load::<(i64, bool)>(&mut conn);
@@ -271,26 +535,51 @@ error[E0277]: mixing aggregate and not aggregate expressions is not allowed in S
      |          |
      |          required by a bound introduced by this call
      |
-     = help: the trait `MixedAggregates<diesel::expression::is_aggregate::No>` is not implemented for `diesel::expression::is_aggregate::Yes`
-     = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-     = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-     = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::Yes` implements trait `MixedAggregates<Other>`
-    --> ROOT/diesel/src/expression/mod.rs
+     = help: the trait `LoadQuery<'_, _, (i64, bool)>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> ROOT/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL |     impl MixedAggregates<Yes> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Yes>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
 ...
- LL |     impl MixedAggregates<Never> for Yes {
-     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-     = note: required for `(CountStar, Exists<SelectStatement<_, _, _, _>>)` to implement `ValidGrouping<()>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, (i64, bool)>`
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> ROOT/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
