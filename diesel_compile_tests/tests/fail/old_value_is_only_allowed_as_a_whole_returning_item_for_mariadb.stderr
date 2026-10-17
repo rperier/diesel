@@ -64,14 +64,14 @@ error[E0277]: the trait bound `OldValueOf<Text>: SqlType` is not satisfied
     |          required by a bound introduced by this call
     |
     = help: the following other types implement trait `diesel::sql_types::SqlType`:
-              (T,)
-              (T, T1)
-              (T, T1, T2)
-              (T, T1, T2, T3)
-              (T, T1, T2, T3, T4)
-              (T, T1, T2, T3, T4, T5)
-              (T, T1, T2, T3, T4, T5, T6)
-              (T, T1, T2, T3, T4, T5, T6, T7)
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+              BigInt
+              CChar
+              Cidr
+              Citext
+              Datetime
+              Inet
+              Interval
             and N others
     = note: required for `Eq<name, OldValue<name>>` to implement `Expression`
     = note: 1 redundant requirement hidden
@@ -191,14 +191,14 @@ LL |         .returning(diesel::dsl::case_when(users::id.eq(1), old_value(users:
    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `diesel::sql_types::SqlType` is not implemented for `OldValueOf<Text>`
    |
    = help: the following other types implement trait `diesel::sql_types::SqlType`:
-             (T,)
-             (T, T1)
-             (T, T1, T2)
-             (T, T1, T2, T3)
-             (T, T1, T2, T3, T4)
-             (T, T1, T2, T3, T4, T5)
-             (T, T1, T2, T3, T4, T5, T6)
-             (T, T1, T2, T3, T4, T5, T6, T7)
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+             BigInt
+             CChar
+             Cidr
+             Citext
+             Datetime
+             Inet
+             Interval
            and N others
 note: required by a bound in `case_when`
   --> ROOT/diesel/src/expression/case_when.rs
@@ -219,14 +219,14 @@ error[E0277]: the trait bound `OldValueOf<Nullable<Text>>: SqlType` is not satis
     |          required by a bound introduced by this call
     |
     = help: the following other types implement trait `diesel::sql_types::SqlType`:
-              (T,)
-              (T, T1)
-              (T, T1, T2)
-              (T, T1, T2, T3)
-              (T, T1, T2, T3, T4)
-              (T, T1, T2, T3, T4, T5)
-              (T, T1, T2, T3, T4, T5, T6)
-              (T, T1, T2, T3, T4, T5, T6, T7)
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+              BigInt
+              CChar
+              Cidr
+              Citext
+              Datetime
+              Inet
+              Interval
             and N others
     = note: required for `CaseWhen<CaseWhenConditionsLeaf<Grouped<_>, _>, _>` to implement `Expression`
     = note: required for `CaseWhen<CaseWhenConditionsLeaf<Grouped<_>, _>, _>` to implement `AppearsOnTable<ReturningQuerySource<_, table>>`
@@ -277,14 +277,14 @@ LL | |         ))
     | |_________^ the trait `diesel::sql_types::SqlType` is not implemented for `OldValueOf<Text>`
     |
     = help: the following other types implement trait `diesel::sql_types::SqlType`:
-              (T,)
-              (T, T1)
-              (T, T1, T2)
-              (T, T1, T2, T3)
-              (T, T1, T2, T3, T4)
-              (T, T1, T2, T3, T4, T5)
-              (T, T1, T2, T3, T4, T5, T6)
-              (T, T1, T2, T3, T4, T5, T6, T7)
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+              BigInt
+              CChar
+              Cidr
+              Citext
+              Datetime
+              Inet
+              Interval
             and N others
     = note: required for `(OldValueOf<Text>,)` to implement `diesel::sql_types::SqlType`
     = note: 1 redundant requirement hidden

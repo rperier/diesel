@@ -22,14 +22,14 @@ LL |             .filter(posts::user_id.eq(old_value(users::id)))
    |              ^^^^^^ the trait `diesel::sql_types::SqlType` is not implemented for `OldValueOf<Integer>`
    |
    = help: the following other types implement trait `diesel::sql_types::SqlType`:
-             (T,)
-             (T, T1)
-             (T, T1, T2)
-             (T, T1, T2, T3)
-             (T, T1, T2, T3, T4)
-             (T, T1, T2, T3, T4, T5)
-             (T, T1, T2, T3, T4, T5, T6)
-             (T, T1, T2, T3, T4, T5, T6, T7)
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+             BigInt
+             CChar
+             Cidr
+             Citext
+             Datetime
+             Inet
+             Interval
            and N others
    = note: required for `Eq<user_id, OldValue<id>>` to implement `Expression`
    = note: required for `SelectStatement<FromClause<table>, _>` to implement `FilterDsl<Grouped<Eq<user_id, OldValue<id>>>>`
@@ -96,14 +96,14 @@ error[E0277]: the trait bound `OldValueOf<Integer>: SqlType` is not satisfied
     | |_____________________________^ the trait `diesel::sql_types::SqlType` is not implemented for `OldValueOf<Integer>`
     |
     = help: the following other types implement trait `diesel::sql_types::SqlType`:
-              (T,)
-              (T, T1)
-              (T, T1, T2)
-              (T, T1, T2, T3)
-              (T, T1, T2, T3, T4)
-              (T, T1, T2, T3, T4, T5)
-              (T, T1, T2, T3, T4, T5, T6)
-              (T, T1, T2, T3, T4, T5, T6, T7)
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
+              BigInt
+              CChar
+              Cidr
+              Citext
+              Datetime
+              Inet
+              Interval
             and N others
     = note: required for `Eq<user_id, OldValue<id>>` to implement `Expression`
     = note: 1 redundant requirement hidden
